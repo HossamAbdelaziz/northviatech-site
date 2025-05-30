@@ -1,0 +1,30 @@
+:root {
+    --color-primary: #0B0F1A;
+    /* Base dark background */
+    --color-accent: #1C75BC;
+    /* Logo blue */
+    --color-card: #111827;
+    /* Slightly lighter than bg for cards */
+    --color-text: #E5E7EB;
+    /* Light text */
+    --color-muted: #9CA3AF;
+    /* Soft gray */
+}
+
+/* Optional utility shortcuts */
+.bg-primary {
+    background-color: var(--color-primary);
+}
+
+.text-accent {
+    color: var(--color-accent);
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
