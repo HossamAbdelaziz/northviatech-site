@@ -1,7 +1,80 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
 
 function CTASection() {
     const [showForm, setShowForm] = useState(false);
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
+    const [message, setMessage] = useState('');
+    const [bestTime, setBestTime] = useState('');
+    const [customTime, setCustomTime] = useState('');
+    const [status, setStatus] = useState('');
+
+    const sendEmail = async (e) => {
+        e.preventDefault();
+        setStatus('Sending...');
+
+        let token = '';
+        try {
+            await new Promise((resolve) => {
+                window.grecaptcha.ready(() => {
+                    window.grecaptcha
+                        .execute('6LebClIrAAAAAFf6l9PiOH0LbCnWZ4sWcciIUSBJ', { action: 'submit' })
+                        .then((t) => {
+                            token = t;
+                            resolve();
+                        });
+                });
+            });
+        } catch (err) {
+            setStatus('⚠️ reCAPTCHA failed to load.');
+            return;
+        }
+
+
+        const payload = {
+            from_name: name,
+            from_email: email,
+            phone_number: phone,
+            message,
+            best_time: bestTime === 'Other' ? customTime : bestTime,
+            token,
+        };
+
+        try {
+            const response = await fetch('http://localhost:5001/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                setStatus('✅ Message sent successfully!');
+                setName('');
+                setEmail('');
+                setPhone('');
+                setMessage('');
+                setBestTime('');
+                setCustomTime('');
+            } else {
+                setStatus('❌ Failed to send. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            setStatus('❌ Server error. Please try again later.');
+        }
+    };
+
+    useEffect(() => {
+        const script = document.createElement('script');
+        script.src = 'https://www.google.com/recaptcha/api.js?render=6LebClIrAAAAAFf6l9PiOH0LbCnWZ4sWcciIUSBJ';
+        script.async = true;
+        document.body.appendChild(script);
+    }, []);
+
 
     return (
         <section className="py-24 px-6 bg-[var(--color-primary)] text-[var(--color-text)] relative z-10">
@@ -28,7 +101,7 @@ function CTASection() {
                 </div>
 
                 <div className="text-sm text-[var(--color-muted)]">
-                    📞 (647) 555-1234 &nbsp; • &nbsp; ✉️ hello@northviatech.com
+                    📞 (647) 675-3343 &nbsp; • &nbsp; ✉️ info@northviatech.com
                 </div>
             </div>
 
@@ -40,27 +113,66 @@ function CTASection() {
                             Get a Free Quote
                         </h3>
 
-                        <form className="space-y-4">
+                        <form onSubmit={sendEmail} className="space-y-4">
+
                             <input
                                 type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
                                 placeholder="Your Name"
                                 className="w-full px-4 py-2 bg-[#1f2937] border border-gray-600 rounded-md text-sm text-white"
                             />
+
                             <input
                                 type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Email Address"
                                 className="w-full px-4 py-2 bg-[#1f2937] border border-gray-600 rounded-md text-sm text-white"
                             />
+
                             <input
                                 type="tel"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
                                 placeholder="Phone Number"
                                 className="w-full px-4 py-2 bg-[#1f2937] border border-gray-600 rounded-md text-sm text-white"
                             />
+
                             <textarea
                                 rows="4"
+                                value={message}
+                                onChange={(e) => setMessage(e.target.value)}
                                 placeholder="Tell us more about your business or idea..."
                                 className="w-full px-4 py-2 bg-[#1f2937] border border-gray-600 rounded-md text-sm text-white"
                             ></textarea>
+
+
+                            {/* Best Time to Reach Dropdown */}
+                            <select
+                                value={bestTime}
+                                onChange={(e) => setBestTime(e.target.value)}
+                                className="w-full px-4 py-2 bg-[#1f2937] border border-gray-600 rounded-md text-sm text-white"
+                            >
+                                <option value="">Best time to reach you?</option>
+                                <option value="Morning (9am–12pm)">Morning (9am–12pm)</option>
+                                <option value="Afternoon (12pm–4pm)">Afternoon (12pm–4pm)</option>
+                                <option value="Evening (4pm–8pm)">Evening (4pm–8pm)</option>
+                                <option value="Weekend">Weekend</option>
+                                <option value="Anytime">Anytime</option>
+                                <option value="Other">Other</option>
+                            </select>
+
+                            {/* Custom input if 'Other' selected */}
+                            {bestTime === 'Other' && (
+                                <input
+                                    type="text"
+                                    placeholder="Enter preferred time"
+                                    value={customTime}
+                                    onChange={(e) => setCustomTime(e.target.value)}
+                                    className="w-full px-4 py-2 bg-[#1f2937] border border-gray-600 rounded-md text-sm text-white"
+                                />
+                            )}
 
                             <button
                                 type="submit"
@@ -68,7 +180,12 @@ function CTASection() {
                             >
                                 Submit Request
                             </button>
+                            {status && (
+                                <p className="text-sm text-white/80 mt-2">{status}</p>
+                            )}
+
                         </form>
+
 
                         <button
                             onClick={() => setShowForm(false)}
