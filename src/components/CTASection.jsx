@@ -18,32 +18,28 @@ function CTASection() {
         setStatus('Sending...');
 
         let token = '';
+
         try {
-            await new Promise((resolve, reject) => {
-                if (!window.grecaptcha) {
-                    reject('reCAPTCHA not loaded');
-                }
+            // ✅ Wait until reCAPTCHA is loaded
+            if (!window.grecaptcha || !window.grecaptcha.execute) {
+                throw new Error('reCAPTCHA not loaded');
+            }
 
-                window.grecaptcha.ready(() => {
-                    window.grecaptcha
-                        .execute(RECAPTCHA_KEY, { action: 'submit' })
-
-                        .then((t) => {
-                            if (!t) {
-                                reject('No token returned');
-                            } else {
-                                token = t;
-                                resolve();
-                            }
-                        }).catch(reject);
-                });
+            // ✅ Execute reCAPTCHA and get token
+            token = await window.grecaptcha.execute('6LebClIrAAAAAFf6l9PiOH0LbCnWZ4sWcciIUSBJ', {
+                action: 'submit',
             });
+
+            if (!token) {
+                throw new Error('No token returned');
+            }
         } catch (err) {
             console.error('❌ reCAPTCHA Error:', err);
             setStatus('⚠️ reCAPTCHA verification failed.');
             return;
         }
 
+        // ✅ Prepare payload for backend
         const payload = {
             from_name: name,
             from_email: email,
@@ -54,7 +50,7 @@ function CTASection() {
         };
 
         try {
-            const response = await fetch(`${BACKEND_URL}/send-email`, {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/send-email`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
@@ -79,15 +75,25 @@ function CTASection() {
         }
     };
 
+
     useEffect(() => {
-        if (!window.grecaptcha) {
-            const script = document.createElement('script');
-            script.src = 'https://www.google.com/recaptcha/api.js?render=6LebClIrAAAAAFf6l9PiOH0LbCnWZ4sWcciIUSBJ';
-            script.async = true;
-            script.defer = true;
-            document.body.appendChild(script);
-        }
+        const loadReCAPTCHA = () => {
+            if (window.grecaptcha && window.grecaptcha.render) {
+                console.log('✅ reCAPTCHA is ready');
+            } else {
+                setTimeout(loadReCAPTCHA, 100); // retry every 100ms until ready
+            }
+        };
+
+        const script = document.createElement('script');
+        script.src = 'https://www.google.com/recaptcha/api.js?render=6LebClIrAAAAAFf6l9PiOH0LbCnWZ4sWcciIUSBJ';
+        script.async = true;
+        script.defer = true;
+        document.body.appendChild(script);
+
+        loadReCAPTCHA(); // start checking when it's ready
     }, []);
+
 
     return (
         <section className="py-24 px-6 bg-[var(--color-primary)] text-[var(--color-text)] relative z-10">
