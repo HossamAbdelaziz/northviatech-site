@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 
-
 function CTASection() {
     const [showForm, setShowForm] = useState(false);
     const [name, setName] = useState('');
@@ -17,21 +16,29 @@ function CTASection() {
 
         let token = '';
         try {
-            await new Promise((resolve) => {
+            await new Promise((resolve, reject) => {
+                if (!window.grecaptcha) {
+                    reject('reCAPTCHA not loaded');
+                }
+
                 window.grecaptcha.ready(() => {
                     window.grecaptcha
                         .execute('6LebClIrAAAAAFf6l9PiOH0LbCnWZ4sWcciIUSBJ', { action: 'submit' })
                         .then((t) => {
-                            token = t;
-                            resolve();
-                        });
+                            if (!t) {
+                                reject('No token returned');
+                            } else {
+                                token = t;
+                                resolve();
+                            }
+                        }).catch(reject);
                 });
             });
         } catch (err) {
-            setStatus('⚠️ reCAPTCHA failed to load.');
+            console.error('❌ reCAPTCHA Error:', err);
+            setStatus('⚠️ reCAPTCHA verification failed.');
             return;
         }
-
 
         const payload = {
             from_name: name,
@@ -63,18 +70,20 @@ function CTASection() {
                 setStatus('❌ Failed to send. Please try again.');
             }
         } catch (error) {
-            console.error('Error:', error);
+            console.error('❌ Server Error:', error);
             setStatus('❌ Server error. Please try again later.');
         }
     };
 
     useEffect(() => {
-        const script = document.createElement('script');
-        script.src = 'https://www.google.com/recaptcha/api.js?render=6LebClIrAAAAAFf6l9PiOH0LbCnWZ4sWcciIUSBJ';
-        script.async = true;
-        document.body.appendChild(script);
+        if (!window.grecaptcha) {
+            const script = document.createElement('script');
+            script.src = 'https://www.google.com/recaptcha/api.js?render=6LebClIrAAAAAFf6l9PiOH0LbCnWZ4sWcciIUSBJ';
+            script.async = true;
+            script.defer = true;
+            document.body.appendChild(script);
+        }
     }, []);
-
 
     return (
         <section className="py-24 px-6 bg-[var(--color-primary)] text-[var(--color-text)] relative z-10">
@@ -121,6 +130,7 @@ function CTASection() {
                                 onChange={(e) => setName(e.target.value)}
                                 placeholder="Your Name"
                                 className="w-full px-4 py-2 bg-[#1f2937] border border-gray-600 rounded-md text-sm text-white"
+                                required
                             />
 
                             <input
@@ -129,6 +139,7 @@ function CTASection() {
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Email Address"
                                 className="w-full px-4 py-2 bg-[#1f2937] border border-gray-600 rounded-md text-sm text-white"
+                                required
                             />
 
                             <input
@@ -147,8 +158,6 @@ function CTASection() {
                                 className="w-full px-4 py-2 bg-[#1f2937] border border-gray-600 rounded-md text-sm text-white"
                             ></textarea>
 
-
-                            {/* Best Time to Reach Dropdown */}
                             <select
                                 value={bestTime}
                                 onChange={(e) => setBestTime(e.target.value)}
@@ -163,7 +172,6 @@ function CTASection() {
                                 <option value="Other">Other</option>
                             </select>
 
-                            {/* Custom input if 'Other' selected */}
                             {bestTime === 'Other' && (
                                 <input
                                     type="text"
@@ -183,9 +191,7 @@ function CTASection() {
                             {status && (
                                 <p className="text-sm text-white/80 mt-2">{status}</p>
                             )}
-
                         </form>
-
 
                         <button
                             onClick={() => setShowForm(false)}

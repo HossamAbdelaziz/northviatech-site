@@ -1,7 +1,5 @@
 import { Link } from 'react-router-dom';
 import Lottie from 'lottie-react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-
 
 // Lottie animations
 import customSystems from '../assets/services/custom-systems.json';
@@ -16,37 +14,37 @@ const services = [
         title: 'Custom Systems',
         description: 'Smart solutions built around your workflow, not the other way around.',
         animation: customSystems,
-        route: '/services/custom-systems',
+        slug: 'custom-systems',
     },
     {
         title: 'Web & App Dev',
         description: 'Modern websites and mobile apps designed for performance and usability.',
         animation: webAppDev,
-        route: '/services/web-app-dev',
+        slug: 'web-app-dev',
     },
     {
         title: 'Automation',
         description: 'Automate emails, forms, and admin tasks to save time and avoid errors.',
         animation: automation,
-        route: '/services/automation',
+        slug: 'automation',
     },
     {
         title: 'Payments',
         description: 'Integrated Stripe and subscription systems to get paid on time, every time.',
         animation: payments,
-        route: '/services/payments',
+        slug: 'payments',
     },
     {
         title: 'AI Tools',
         description: 'Smart assistants, reminders, and automation powered by AI.',
         animation: aiTools,
-        route: '/services/ai-tools',
+        slug: 'ai-tools',
     },
     {
         title: 'Maintenance & Support',
         description: 'Ongoing updates, security, and performance improvements for your systems.',
         animation: maintenance,
-        route: '/services/maintenance',
+        slug: 'maintenance',
     },
 ];
 
@@ -62,9 +60,10 @@ function ServicesOverview() {
 
             <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
                 {services.map((service, index) => (
-                    <div
+                    <Link
+                        to={`/services/${service.slug}`}
                         key={index}
-                        className="bg-[#111827] border border-gray-700 rounded-2xl p-6 flex flex-col items-center text-center hover:shadow-lg transition group"
+                        className="bg-[#111827] border border-gray-700 rounded-2xl p-6 flex flex-col items-center text-center hover:shadow-lg transition group hover:border-[var(--color-accent)]"
                     >
                         <div className="w-40 h-40 mb-4">
                             <Lottie animationData={service.animation} loop={true} />
@@ -76,13 +75,10 @@ function ServicesOverview() {
 
                         <p className="text-sm text-[var(--color-muted)] mb-4">{service.description}</p>
 
-                        <Link
-                            to={service.route}
-                            className="text-sm text-[var(--color-accent)] hover:underline font-medium"
-                        >
+                        <div className="text-sm text-[var(--color-accent)] font-medium">
                             Learn more →
-                        </Link>
-                    </div>
+                        </div>
+                    </Link>
                 ))}
             </div>
         </section>
