@@ -79,15 +79,7 @@ function CTASection() {
         }
     };
 
-    useEffect(() => {
-        if (!window.grecaptcha) {
-            const script = document.createElement('script');
-            script.src = 'https://www.google.com/recaptcha/api.js?render=6LebClIrAAAAAFf6l9PiOH0LbCnWZ4sWcciIUSBJ';
-            script.async = true;
-            script.defer = true;
-            document.body.appendChild(script);
-        }
-    }, []);
+
 
     return (
         <section className="py-24 px-6 bg-[var(--color-primary)] text-[var(--color-text)] relative z-10">
