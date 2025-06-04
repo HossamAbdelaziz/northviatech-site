@@ -9,8 +9,9 @@ function CTASection() {
     const [bestTime, setBestTime] = useState('');
     const [customTime, setCustomTime] = useState('');
     const [status, setStatus] = useState('');
-    const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-    const RECAPTCHA_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY;
+    const BACKEND_URL = import.meta.env.VITE_REACT_APP_BACKEND_URL;
+    const RECAPTCHA_KEY = import.meta.env.VITE_REACT_APP_RECAPTCHA_SITE_KEY;
+
 
 
     const sendEmail = async (e) => {
@@ -26,9 +27,10 @@ function CTASection() {
             }
 
             // ✅ Execute reCAPTCHA and get token
-            token = await window.grecaptcha.execute('6LebClIrAAAAAFf6l9PiOH0LbCnWZ4sWcciIUSBJ', {
+            token = await window.grecaptcha.execute(RECAPTCHA_KEY, {
                 action: 'submit',
             });
+
 
             if (!token) {
                 throw new Error('No token returned');
@@ -50,7 +52,9 @@ function CTASection() {
         };
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/send-email`, {
+            console.log('🔍 Sending payload:', payload);
+
+            const response = await fetch(`${BACKEND_URL}/send-email`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
@@ -86,7 +90,7 @@ function CTASection() {
         };
 
         const script = document.createElement('script');
-        script.src = 'https://www.google.com/recaptcha/api.js?render=6LebClIrAAAAAFf6l9PiOH0LbCnWZ4sWcciIUSBJ';
+        script.src = `https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_KEY}`;
         script.async = true;
         script.defer = true;
         document.body.appendChild(script);
