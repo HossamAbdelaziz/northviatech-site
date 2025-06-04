@@ -9,6 +9,9 @@ function CTASection() {
     const [bestTime, setBestTime] = useState('');
     const [customTime, setCustomTime] = useState('');
     const [status, setStatus] = useState('');
+    const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+    const RECAPTCHA_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY;
+
 
     const sendEmail = async (e) => {
         e.preventDefault();
@@ -23,7 +26,8 @@ function CTASection() {
 
                 window.grecaptcha.ready(() => {
                     window.grecaptcha
-                        .execute('6LebClIrAAAAAFf6l9PiOH0LbCnWZ4sWcciIUSBJ', { action: 'submit' })
+                        .execute(RECAPTCHA_KEY, { action: 'submit' })
+
                         .then((t) => {
                             if (!t) {
                                 reject('No token returned');
@@ -50,7 +54,7 @@ function CTASection() {
         };
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/send-email`, {
+            const response = await fetch(`${BACKEND_URL}/send-email`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
