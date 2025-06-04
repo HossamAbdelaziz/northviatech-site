@@ -18,23 +18,24 @@ function CTASection() {
         setStatus('Sending...');
 
         let token = '';
-
         try {
-            // ✅ Wait until reCAPTCHA is ready before trying to execute
-            if (!window.grecaptcha) {
-                throw new Error('reCAPTCHA not loaded');
-            }
-
             await new Promise((resolve, reject) => {
+                if (!window.grecaptcha) {
+                    reject('reCAPTCHA not loaded');
+                }
+
                 window.grecaptcha.ready(() => {
                     window.grecaptcha
                         .execute(RECAPTCHA_KEY, { action: 'submit' })
+
                         .then((t) => {
-                            if (!t) reject('No token returned');
-                            token = t;
-                            resolve();
-                        })
-                        .catch(reject);
+                            if (!t) {
+                                reject('No token returned');
+                            } else {
+                                token = t;
+                                resolve();
+                            }
+                        }).catch(reject);
                 });
             });
         } catch (err) {
@@ -42,7 +43,6 @@ function CTASection() {
             setStatus('⚠️ reCAPTCHA verification failed.');
             return;
         }
-
 
         const payload = {
             from_name: name,
@@ -79,7 +79,15 @@ function CTASection() {
         }
     };
 
-
+    useEffect(() => {
+        if (!window.grecaptcha) {
+            const script = document.createElement('script');
+            script.src = 'https://www.google.com/recaptcha/api.js?render=6LebClIrAAAAAFf6l9PiOH0LbCnWZ4sWcciIUSBJ';
+            script.async = true;
+            script.defer = true;
+            document.body.appendChild(script);
+        }
+    }, []);
 
     return (
         <section className="py-24 px-6 bg-[var(--color-primary)] text-[var(--color-text)] relative z-10">
