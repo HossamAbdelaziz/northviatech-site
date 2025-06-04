@@ -18,24 +18,23 @@ function CTASection() {
         setStatus('Sending...');
 
         let token = '';
-        try {
-            await new Promise((resolve, reject) => {
-                if (!window.grecaptcha) {
-                    reject('reCAPTCHA not loaded');
-                }
 
+        try {
+            // ✅ Wait until reCAPTCHA is ready before trying to execute
+            if (!window.grecaptcha) {
+                throw new Error('reCAPTCHA not loaded');
+            }
+
+            await new Promise((resolve, reject) => {
                 window.grecaptcha.ready(() => {
                     window.grecaptcha
                         .execute(RECAPTCHA_KEY, { action: 'submit' })
-
                         .then((t) => {
-                            if (!t) {
-                                reject('No token returned');
-                            } else {
-                                token = t;
-                                resolve();
-                            }
-                        }).catch(reject);
+                            if (!t) reject('No token returned');
+                            token = t;
+                            resolve();
+                        })
+                        .catch(reject);
                 });
             });
         } catch (err) {
@@ -43,6 +42,7 @@ function CTASection() {
             setStatus('⚠️ reCAPTCHA verification failed.');
             return;
         }
+
 
         const payload = {
             from_name: name,
